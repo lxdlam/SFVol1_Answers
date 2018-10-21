@@ -74,7 +74,39 @@ Proof.
 Qed.
 
 Theorem mult_0_plus': 
-    forall n m : nat,.
+    forall n m : nat,
+    (0 + n) * m = n * m.
 Proof.
-    
+    intros n m.
+    assert (H: 0 + n = n). { reflexivity. }
+    rewrite -> H.
+    reflexivity.
 Qed.
+
+Theorem plus_rearrange:
+    forall n m p q : nat,
+    (n + m) + (p + q) = (m + n) + (p + q).
+Proof.
+    intros n m p q.
+    assert (H: n + m = m + n).
+    { rewrite -> plus_comm. reflexivity. }
+    rewrite -> H. reflexivity.
+Qed.
+
+Theorem plus_assoc': 
+    forall n m p : nat,
+    n + (m + p) = (n + m) + p.
+Proof.
+    intros n m p. induction n as [| n' IHn']. reflexivity.
+    simpl. rewrite -> IHn'. reflexivity.
+Qed.
+
+Theorem plus_assoc'': 
+    forall n m p : nat,
+    n + (m + p) = (n + m) + p.
+Proof.
+    intros n m p. induction n as [| n' IHn']. 
+    - reflexivity.
+    - simpl. rewrite -> IHn'. reflexivity.
+Qed.
+
