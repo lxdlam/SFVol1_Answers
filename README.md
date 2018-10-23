@@ -16,8 +16,8 @@ All my answers are tested by the `*Test.v`.
 
 - [x] Basics
 - [x] Induction
-- [ ] Lists <- *Currently here*
-- [ ] Poly
+- [x] Lists
+- [ ] Poly <- *Currently here*
 - [ ] Tactics
 - [ ] Logic
 - [ ] IndProp

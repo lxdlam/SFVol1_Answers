@@ -376,8 +376,9 @@ Lemma nonzeros_app :
 Proof.
     intros l1 l2. induction l1 as [| n l1' IHl1'].
     - reflexivity.
-    - assert (H:(n :: l1') ++ l2 = n :: (l1' ++ l2)). { reflexivity. }
-      rewrite -> H.
+    - induction n as [| n' IHn'].
+      + simpl. rewrite -> IHl1'. reflexivity.
+      + simpl. rewrite -> IHl1'. reflexivity.
 Qed.
 
 (*eqblist*)
@@ -421,6 +422,147 @@ Proof.
     reflexivity.
 Qed.
 
+Theorem leb_n_Sn: 
+    forall n,
+    n <=? (S n) = true.
+Proof.
+    intros n. induction n as [| n' IHn'].
+    - simpl. reflexivity.
+    - simpl. rewrite IHn'. reflexivity.
+Qed.
 
+(*remove_does_not_increase_count*)
+
+Theorem remove_does_not_increase_count:
+    forall (s: bag),
+    (count 0 (remove_one 0 s)) <=? (count 0 s) = true.
+Proof.
+    intros s. induction s as [| n s' IHs'].
+    - reflexivity.
+    - induction n as [| n' IHn'].
+      + simpl. rewrite leb_n_Sn. reflexivity.
+      + simpl. rewrite IHs'. reflexivity.
+Qed.
+
+Fixpoint nth_bad (l : natlist) (n : nat) : nat :=
+    match l with
+    | nil => 42
+    | a :: l' => match n =? O with
+                 | true => a
+                 | false => nth_bad l' (pred n)
+                 end
+    end.
+
+Inductive natoption : Type :=
+    | Some (n : nat)
+    | None.
+
+Fixpoint nth_error (l : natlist) (n : nat) : natoption :=
+    match l with
+    | nil => None
+    | a :: l' => match n=? O with
+                 | true => Some a
+                 | false => nth_error l' (pred n)
+                 end
+    end.
+
+Example test_nth_error1 : nth_error [4;5;6;7] 0 = Some 4.
+Proof. reflexivity. Qed.
+Example test_nth_error2 : nth_error [4;5;6;7] 3 = Some 7.
+Proof. reflexivity. Qed.
+Example test_nth_error3 : nth_error [4;5;6;7] 9 = None.
+Proof. reflexivity. Qed.
+
+Fixpoint nth_error' (l : natlist) (n : nat) : natoption :=
+    match l with
+    | nil => None
+    | a :: l' => if n =? O then Some a
+                 else nth_error' l' (pred n)
+    end.
+
+Definition option_elim (d : nat) (o : natoption) : nat :=
+    match o with
+    | Some n' => n'
+    | None => d
+    end.
+
+(*hd_error*)
+Definition hd_error (l : natlist) : natoption := 
+    match l with
+    | nil => None
+    | h :: t => Some h
+    end.
+
+Example test_hd_error1 : hd_error [] = None.
+Proof. reflexivity. Qed.
+Example test_hd_error2 : hd_error [1] = Some 1.
+Proof. reflexivity. Qed.
+Example test_hd_error3 : hd_error [5;6] = Some 5.
+Proof. reflexivity. Qed.   
+
+(*option_elim_hd*)
+Theorem option_elim_hd:
+    forall (l : natlist) (default : nat),
+    hd default l = option_elim default (hd_error l).
+Proof.
+    intros l d. destruct l as [| n l'].
+    - reflexivity.
+    - reflexivity.
+Qed.
 
 End NatList.
+
+Inductive id : Type :=
+    | Id (n : nat).
+
+Definition eqb_id (x1 x2 : id):= 
+    match x1, x2 with
+    | Id n1, Id n2 => n1 =? n2
+    end.
+
+Theorem eqb_id_refl:
+    forall x, true = eqb_id x x.
+Proof.
+    intros x. simpl.
+    destruct x as [n].
+    induction n as [| n' IHn'].
+    - reflexivity.
+    - simpl. rewrite IHn'. reflexivity.
+Qed.
+
+Module PartialMap.
+Export NatList.
+
+Inductive partial_map : Type :=
+    | empty
+    | record (i : id) (v : nat) (m : partial_map).
+
+Definition update (d : partial_map)
+                  (x : id) (value : nat) :=
+    record x value d.
+
+Fixpoint find (x : id) (d : partial_map) : natoption :=
+    match d with
+    | empty => None
+    | record y v d' => if eqb_id x y
+                       then Some v
+                       else find x d'
+    end.
+
+Theorem update_eq:
+    forall (d : partial_map) (x : id) (v : nat),
+    find x (update d x v) = Some v.
+Proof.
+    intros d x v.
+    simpl. rewrite <- eqb_id_refl. reflexivity.
+Qed.
+
+Theorem update_neq:
+    forall (d : partial_map) (x y : id) (o : nat),
+    eqb_id x y = false -> find x (update d y o) = find x d.
+Proof.
+    intros d x y o.
+    simpl. intros H. rewrite -> H. reflexivity.
+Qed.
+
+End PartialMap.
