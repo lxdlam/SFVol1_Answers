@@ -2,7 +2,9 @@
 
 ## Software Foundations Volume 1: Logical Foundations
 
-[Read it online](https://softwarefoundations.cis.upenn.edu/current/lf-current/index.html). [Chinese Version(draft now)]().
+[Read it online](https://softwarefoundations.cis.upenn.edu/current/lf-current/index.html).
+
+[Chinese Version(draft now)](https://coq-zh.github.io/SF-zh/lf-current/index.html).
 
 ## Disclaimer
 
